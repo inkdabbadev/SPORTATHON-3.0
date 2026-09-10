@@ -8,13 +8,13 @@ const navItems = [
   { href: "/players", label: "Players" }
 ];
 
-export function Header() {
+export function Header({ logoPath }: { logoPath: string }) {
   return (
     <>
       <header className="topbar">
         <div className="topbar-inner">
           <Link className="brand" href="/">
-            <img className="brand-logo" src="/logo.png" alt={`${EVENT_NAME} logo`} />
+            <img className="brand-logo" src={logoPath} alt={`${EVENT_NAME} logo`} />
             <div className="brand-copy">
               <h1>{EVENT_NAME}</h1>
               <span className="tagline">Player registration</span>

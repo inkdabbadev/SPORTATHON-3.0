@@ -9,7 +9,10 @@ const TeamSchema = new Schema(
     email: { type: String, trim: true, lowercase: true, maxlength: 120, default: "" },
     color: { type: String, required: true, default: "#19388A" },
     purse: { type: Number, required: true, min: 0, default: 10000 },
-    photoDataUrl: { type: String, default: "" },
+    photo: {
+      data: { type: Buffer, default: null },
+      contentType: { type: String, default: "" }
+    },
     active: { type: Boolean, required: true, default: true }
   },
   { timestamps: true }

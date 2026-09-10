@@ -19,7 +19,10 @@ const PlayerSchema = new Schema(
     batsmanStyle: { type: String, enum: ["", ...BATSMAN_STYLES], default: "" },
     bowlerStyle: { type: String, enum: ["", ...BOWLER_STYLES], default: "" },
     contact: { type: String, required: true, trim: true, maxlength: 30 },
-    photoDataUrl: { type: String, default: "" },
+    photo: {
+      data: { type: Buffer, default: null },
+      contentType: { type: String, default: "" }
+    },
     status: { type: String, required: true, enum: PLAYER_STATUSES, default: "unsold" },
     soldTo: { type: Schema.Types.ObjectId, ref: "Team", default: null },
     soldPrice: { type: Number, min: 0, default: null },

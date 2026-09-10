@@ -27,6 +27,7 @@ export default async function AdminPlayersPage() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Photo</th>
                 <th>Name</th>
                 <th>Gender</th>
                 <th>Registering as</th>
@@ -42,6 +43,11 @@ export default async function AdminPlayersPage() {
               {players.length ? (
                 players.map((player) => (
                   <tr key={player.id}>
+                    <td>
+                      <div className={`table-avatar ${player.photoDataUrl ? "" : "empty"}`}>
+                        {player.photoDataUrl ? <img src={player.photoDataUrl} alt="" /> : "No photo"}
+                      </div>
+                    </td>
                     <td>{player.name}</td>
                     <td>{player.gender || "-"}</td>
                     <td>{player.registeringAs || "-"}</td>
@@ -63,7 +69,7 @@ export default async function AdminPlayersPage() {
                 ))
               ) : (
                 <tr>
-                  <td className="empty" colSpan={9}>No players yet.</td>
+                  <td className="empty" colSpan={10}>No players yet.</td>
                 </tr>
               )}
             </tbody>

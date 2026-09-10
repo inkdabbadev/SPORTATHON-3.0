@@ -5,9 +5,10 @@ type HeroProps = {
   teamCount: number;
   playerCount: number;
   selectedCount: number;
+  logoPath: string;
 };
 
-export function Hero({ teamCount, playerCount, selectedCount }: HeroProps) {
+export function Hero({ teamCount, playerCount, selectedCount, logoPath }: HeroProps) {
   return (
     <>
       <section className="hero">
@@ -30,7 +31,7 @@ export function Hero({ teamCount, playerCount, selectedCount }: HeroProps) {
               </div>
             </div>
           </div>
-          <img className="hero-logo" src="/logo.png" alt={`${EVENT_NAME} logo`} />
+          <img className="hero-logo" src={logoPath} alt={`${EVENT_NAME} logo`} />
         </div>
       </section>
 

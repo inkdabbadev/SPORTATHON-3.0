@@ -133,7 +133,7 @@ export const teamSchema = z.object({
 export const eventSettingsSchema = z.object({
   name: z.string().trim().min(2).max(80).default("SPORTATHON 3.0"),
   tagline: z.string().trim().min(2).max(120).default("Player registration"),
-  logoPath: z.string().trim().min(1).max(200).default("/logo.png"),
+  logoPath: z.string().trim().max(200).optional().default("/logo.png"),
   defaultPurse: z.coerce.number().min(0).default(10000)
 });
 

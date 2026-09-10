@@ -25,9 +25,16 @@ export default async function AdminSettingsPage() {
             <input id="tagline" name="tagline" required defaultValue={settings.tagline} type="text" />
           </div>
           <div className="field">
-            <label htmlFor="logoPath">Logo path</label>
-            <input id="logoPath" name="logoPath" required defaultValue={settings.logoPath} type="text" />
-            <div className="hint">The current logo is served from `/logo.png`.</div>
+            <label htmlFor="logo">Event logo</label>
+            <div className="photo-picker">
+              <div className="photo-preview">
+                <img src={settings.logoPath} alt="" />
+              </div>
+              <div>
+                <input id="logo" accept="image/*" name="logo" type="file" />
+                <div className="hint">Uploading replaces the current logo. Stored directly in the database.</div>
+              </div>
+            </div>
           </div>
           <div className="field">
             <label htmlFor="defaultPurse">Default purse</label>

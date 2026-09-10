@@ -25,6 +25,7 @@ export default async function AdminTeamsPage() {
           <table className="admin-table">
             <thead>
               <tr>
+                <th>Photo</th>
                 <th>Name</th>
                 <th>Owner</th>
                 <th>City</th>
@@ -37,6 +38,11 @@ export default async function AdminTeamsPage() {
               {teams.length ? (
                 teams.map((team) => (
                   <tr key={team.id}>
+                    <td>
+                      <div className={`table-avatar ${team.photoDataUrl ? "" : "empty"}`}>
+                        {team.photoDataUrl ? <img src={team.photoDataUrl} alt="" /> : "No photo"}
+                      </div>
+                    </td>
                     <td>{team.name}</td>
                     <td>{team.owner}</td>
                     <td>{team.city || "-"}</td>
@@ -55,7 +61,7 @@ export default async function AdminTeamsPage() {
                 ))
               ) : (
                 <tr>
-                  <td className="empty" colSpan={6}>No teams yet.</td>
+                  <td className="empty" colSpan={7}>No teams yet.</td>
                 </tr>
               )}
             </tbody>

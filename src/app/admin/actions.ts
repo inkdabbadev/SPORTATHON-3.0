@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { loginAdmin, logoutAdmin, requireAdmin } from "@/lib/auth";
+import { dataUrlToPhoto } from "@/lib/photo";
 import { eventSettingsSchema, loginSchema, playerSchema, teamSchema } from "@/lib/validation";
 import { EventSettings } from "@/models/EventSettings";
 import { Player } from "@/models/Player";
@@ -54,7 +55,8 @@ export async function createPlayerAction(formData: FormData) {
     basePrice: 100
   });
 
-  await Player.create({ ...parsed, soldTo: parsed.soldTo || null });
+  const { photoDataUrl: _createPhotoDataUrl, ...playerFields } = parsed;
+  await Player.create({ ...playerFields, soldTo: parsed.soldTo || null });
   revalidatePath("/");
   revalidatePath("/players");
   revalidatePath("/admin/players");
@@ -81,7 +83,8 @@ export async function updatePlayerAction(formData: FormData) {
     basePrice: 100
   });
 
-  await Player.findByIdAndUpdate(id, { ...parsed, soldTo: parsed.soldTo || null }, { runValidators: true });
+  const { photoDataUrl: _updatePhotoDataUrl, ...playerFields } = parsed;
+  await Player.findByIdAndUpdate(id, { ...playerFields, soldTo: parsed.soldTo || null }, { runValidators: true });
   revalidatePath("/");
   revalidatePath("/players");
   revalidatePath("/teams");
@@ -113,7 +116,8 @@ export async function createTeamAction(formData: FormData) {
     active: boolValue(formData, "active")
   });
 
-  await Team.create(parsed);
+  const { photoDataUrl: _createTeamPhotoDataUrl, ...teamFields } = parsed;
+  await Team.create(teamFields);
   revalidatePath("/");
   revalidatePath("/teams");
   revalidatePath("/admin/teams");
@@ -135,7 +139,8 @@ export async function updateTeamAction(formData: FormData) {
     active: boolValue(formData, "active")
   });
 
-  await Team.findByIdAndUpdate(id, parsed, { runValidators: true });
+  const { photoDataUrl: _updateTeamPhotoDataUrl, ...teamFields } = parsed;
+  await Team.findByIdAndUpdate(id, teamFields, { runValidators: true });
   revalidatePath("/");
   revalidatePath("/teams");
   revalidatePath("/admin/teams");
@@ -157,16 +162,29 @@ export async function deleteTeamAction(formData: FormData) {
 export async function updateSettingsAction(formData: FormData) {
   await requireAdmin();
   await connectDB();
-  const parsed = eventSettingsSchema.parse({
+  const { logoPath: _logoPath, ...parsed } = eventSettingsSchema.parse({
     name: value(formData, "name"),
     tagline: value(formData, "tagline"),
-    logoPath: value(formData, "logoPath"),
     defaultPurse: value(formData, "defaultPurse")
   });
 
+  const logoFile = formData.get("logo");
+  const update: Record<string, unknown> = { ...parsed, singletonKey: "active-event" };
+
+  if (logoFile instanceof File && logoFile.size > 0) {
+    if (!logoFile.type.startsWith("image/")) {
+      throw new Error("Logo must be an image file.");
+    }
+    if (logoFile.size > 2_000_000) {
+      throw new Error("Logo is too large.");
+    }
+    const buffer = Buffer.from(await logoFile.arrayBuffer());
+    update.logo = { data: buffer, contentType: logoFile.type };
+  }
+
   await EventSettings.findOneAndUpdate(
     { singletonKey: "active-event" },
-    { ...parsed, singletonKey: "active-event" },
+    update,
     { upsert: true, runValidators: true }
   );
   revalidatePath("/");

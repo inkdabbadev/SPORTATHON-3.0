@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
+import { dataUrlToPhoto } from "@/lib/photo";
 import { playerSchema } from "@/lib/validation";
 import { Player } from "@/models/Player";
 
@@ -14,7 +15,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid player details." }, { status: 400 });
     }
 
-    const player = await Player.create(parsed.data);
+    const { photoDataUrl, ...playerFields } = parsed.data;
+    const player = await Player.create({ ...playerFields, photo: dataUrlToPhoto(photoDataUrl) });
     revalidatePath("/");
     revalidatePath("/players");
 

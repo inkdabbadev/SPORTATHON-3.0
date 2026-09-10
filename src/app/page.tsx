@@ -1,5 +1,5 @@
 import { Hero } from "@/components/Hero";
-import { getDashboardStats } from "@/lib/data";
+import { getDashboardStats, getEventSettings } from "@/lib/data";
 
 export const dynamic = "force-dynamic";
 
@@ -11,12 +11,21 @@ async function loadStats() {
   }
 }
 
+async function loadLogoPath() {
+  try {
+    const settings = await getEventSettings();
+    return settings.logoPath;
+  } catch {
+    return "/logo.png";
+  }
+}
+
 export default async function HomePage() {
-  const stats = await loadStats();
+  const [stats, logoPath] = await Promise.all([loadStats(), loadLogoPath()]);
 
   return (
     <>
-      <Hero {...stats} />
+      <Hero {...stats} logoPath={logoPath} />
       <section className="steps">
         <div className="step">
           <div className="stepnum">1</div>

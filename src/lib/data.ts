@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/db";
+import { photoToDataUrl } from "@/lib/photo";
 import { EventSettings } from "@/models/EventSettings";
 import { Player } from "@/models/Player";
 import { Team } from "@/models/Team";
@@ -31,7 +32,7 @@ type PlayerDoc = DocLike & {
   batsmanStyle?: BatsmanStyle | "";
   bowlerStyle?: BowlerStyle | "";
   contact: string;
-  photoDataUrl?: string;
+  photo?: { data?: Buffer; contentType?: string } | null;
   status: PlayerStatus;
   soldTo?: { toString(): string } | null;
   soldPrice?: number | null;
@@ -45,7 +46,7 @@ type TeamDoc = DocLike & {
   email?: string;
   color?: string;
   purse?: number;
-  photoDataUrl?: string;
+  photo?: { data?: Buffer; contentType?: string } | null;
   active?: boolean;
 };
 
@@ -53,6 +54,7 @@ type EventDoc = DocLike & {
   name?: string;
   tagline?: string;
   logoPath?: string;
+  logo?: { data?: Buffer; contentType?: string } | null;
   defaultPurse?: number;
 };
 
@@ -72,7 +74,7 @@ function serializePlayer(doc: PlayerDoc): PlayerView {
     batsmanStyle: doc.batsmanStyle || undefined,
     bowlerStyle: doc.bowlerStyle || undefined,
     contact: doc.contact,
-    photoDataUrl: doc.photoDataUrl || undefined,
+    photoDataUrl: photoToDataUrl(doc.photo),
     status: doc.status,
     soldTo: doc.soldTo ? doc.soldTo.toString() : undefined,
     soldPrice: doc.soldPrice ?? undefined,
@@ -91,7 +93,7 @@ function serializeTeam(doc: TeamDoc): TeamView {
     email: doc.email || undefined,
     color: doc.color || "#19388A",
     purse: doc.purse ?? 10000,
-    photoDataUrl: doc.photoDataUrl || undefined,
+    photoDataUrl: photoToDataUrl(doc.photo),
     active: doc.active !== false,
     createdAt: dateToString(doc.createdAt),
     updatedAt: dateToString(doc.updatedAt)
@@ -103,7 +105,7 @@ function serializeEvent(doc: EventDoc): EventSettingsView {
     id: doc._id.toString(),
     name: doc.name || EVENT_NAME,
     tagline: doc.tagline || "Player registration",
-    logoPath: doc.logoPath || "/logo.png",
+    logoPath: photoToDataUrl(doc.logo) || doc.logoPath || "/logo.png",
     defaultPurse: doc.defaultPurse ?? 10000
   };
 }
