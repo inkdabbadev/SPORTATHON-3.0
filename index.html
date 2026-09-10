@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SPORTATHON 3.0</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Anton&family=Barlow:wght@400;500;600;700;800&family=Barlow+Condensed:wght@600;700&display=swap');
+
+  :root{
+    --navy:#0A1A3D;
+    --navy-2:#122B63;
+    --royal:#19388A;
+    --sky:#4F91CD;
+    --gold:#FFC72C;
+    --gold-deep:#E8A317;
+    --crimson:#FF4655;
+    --mint:#2FD9A6;
+    --violet:#8B5CF6;
+    --paper:#FFFFFF;
+    --cloud:#EEF2FA;
+    --ink:#0F1B33;
+    --line:#DCE3F0;
+    --muted:#5B6B8C;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--cloud);
+    color:var(--ink);
+    font-family:'Barlow',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.display{
+    font-family:'Anton',sans-serif;
+    letter-spacing:0.015em;
+    font-weight:400;
+    color:var(--ink);
+    margin:0;
+  }
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important; transition-duration:0.001ms !important;}
+  }
+  .orbit-bar{
+    height:5px;
+    background:linear-gradient(90deg,var(--mint),var(--gold),var(--crimson),var(--violet),var(--sky));
+  }
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    background:linear-gradient(100deg,var(--navy),var(--royal) 75%);
+    color:#fff;
+    padding:14px 20px;
+    position:sticky; top:0; z-index:40;
+  }
+  .topbar-inner{
+    max-width:1100px; margin:0 auto;
+    display:flex; align-items:center; justify-content:space-between; gap:16px;
+    flex-wrap:wrap;
+  }
+  .brand{display:flex; align-items:center; gap:12px; min-width:0;}
+  .brand-logo{
+    width:48px; height:48px; border-radius:8px; background:#fff;
+    object-fit:contain; padding:5px; box-shadow:0 5px 14px rgba(0,0,0,0.16); flex-shrink:0;
+  }
+  .brand-copy{display:flex; flex-direction:column; gap:2px; min-width:0;}
+  .brand h1{font-size:26px; color:#fff; letter-spacing:0.02em;}
+  .brand .tagline{font-size:12px; color:#CFE2FF; font-family:'Barlow',sans-serif; font-weight:500;}
+  nav.tabs{
+    display:flex; gap:4px; overflow-x:auto; -ms-overflow-style:none; scrollbar-width:none;
+  }
+  nav.tabs::-webkit-scrollbar{display:none;}
+  nav.tabs button{
+    background:transparent; border:none; color:#fff;
+    font-family:'Barlow',sans-serif; font-weight:600; font-size:13.5px;
+    padding:8px 14px; cursor:pointer; white-space:nowrap; border-radius:20px;
+    opacity:0.8; transition:opacity 0.15s, background 0.15s;
+  }
+  nav.tabs button:hover{opacity:1; background:rgba(255,255,255,0.1);}
+  nav.tabs button.active{opacity:1; background:var(--gold); color:var(--navy); font-weight:700;}
+
+  main{max-width:1100px; margin:0 auto; padding:28px 20px 80px;}
+  .view{display:none;}
+  .view.active{display:block; animation:fadein 0.25s ease;}
+  @keyframes fadein{from{opacity:0; transform:translateY(6px);} to{opacity:1; transform:none;}}
+
+  /* ---------- Home ---------- */
+  .hero{
+    background:
+      radial-gradient(ellipse at 20% -10%, rgba(255,199,44,0.20), transparent 55%),
+      linear-gradient(135deg,var(--navy) 0%,var(--royal) 55%,var(--violet) 130%);
+    color:#fff;
+    padding:46px 30px 40px; margin:0 -20px 28px;
+  }
+  .hero-inner{max-width:1100px; margin:0 auto; display:flex; align-items:center; justify-content:space-between; gap:30px;}
+  .hero-copy{min-width:0;}
+  .hero-logo{
+    width:min(260px,32vw); max-height:210px; object-fit:contain;
+    background:rgba(255,255,255,0.95); border:1px solid rgba(255,255,255,0.38);
+    border-radius:8px; padding:18px; box-shadow:0 18px 36px rgba(0,0,0,0.18);
+  }
+  .hero h2{font-size:54px; color:#fff; line-height:0.95;}
+  .hero p.sub{font-size:16px; color:var(--sky); max-width:520px; margin-top:12px; font-family:'Barlow',sans-serif; font-weight:500;}
+  .scoreboard{
+    display:flex; gap:30px; margin-top:32px; flex-wrap:wrap;
+  }
+  .score-item{min-width:110px;}
+  .score-item .num{font-family:'Anton',sans-serif; font-size:44px; line-height:1;}
+  .score-item:nth-child(1) .num{color:var(--gold);}
+  .score-item:nth-child(2) .num{color:var(--sky);}
+  .score-item:nth-child(3) .num{color:var(--crimson);}
+  .score-item:nth-child(4) .num{color:var(--mint);}
+  .score-item .label{font-size:13px; color:#fff; opacity:0.85; margin-top:4px; font-weight:500;}
+
+  .cta-grid{display:grid; grid-template-columns:1fr; gap:16px; margin-bottom:36px;}
+  @media (max-width:760px){.cta-grid{grid-template-columns:1fr;}}
+  .cta-card{
+    background:var(--paper); border:1px solid var(--line); border-top:4px solid var(--royal);
+    border-radius:6px;
+    padding:20px; cursor:pointer; transition:transform 0.15s, box-shadow 0.15s;
+  }
+  .cta-card:nth-child(1){border-top-color:var(--crimson);}
+  .cta-card:hover{transform:translateY(-3px); box-shadow:0 8px 20px rgba(15,27,51,0.12);}
+  .cta-card h3{font-size:23px; margin-bottom:6px; font-family:'Barlow',sans-serif; font-weight:800;}
+  .cta-card p{font-size:14px; color:var(--muted); margin:0 0 14px;}
+  .cta-card .go{font-weight:700; color:var(--royal); font-size:13.5px;}
+
+  .steps{display:grid; grid-template-columns:repeat(3,1fr); gap:20px;}
+  @media (max-width:760px){.steps{grid-template-columns:1fr;}}
+  .step{padding:18px 0; border-top:3px solid var(--navy);}
+  .step .stepnum{font-family:'Anton',sans-serif; font-size:32px; color:var(--crimson);}
+  .step h4{font-size:17px; margin:6px 0 6px; font-family:'Barlow',sans-serif; font-weight:800;}
+  .step p{font-size:14px; color:var(--muted); margin:0;}
+
+  /* ---------- Forms ---------- */
+  .panel{
+    background:var(--paper); border:1px solid var(--line); border-top:5px solid var(--royal);
+    border-radius:6px;
+    padding:28px; max-width:640px; margin:0 auto;
+  }
+  .panel h2{font-size:32px; margin-bottom:4px;}
+  .panel .desc{color:var(--muted); font-size:14px; margin-bottom:22px;}
+  .field{margin-bottom:16px;}
+  .conditional-field.is-hidden{display:none;}
+  .field label{display:block; font-size:13px; font-weight:700; margin-bottom:5px; color:var(--ink);}
+  .field .hint{font-size:12px; color:var(--muted); margin-top:4px;}
+  input[type=text],input[type=number],input[type=tel],input[type=email],select{
+    width:100%; padding:10px 12px; border:1.5px solid var(--line); background:#fff; border-radius:5px;
+    font-family:'Barlow',sans-serif; font-size:14.5px; color:var(--ink);
+  }
+  input:focus,select:focus,button:focus-visible{outline:2px solid var(--gold-deep); outline-offset:1px;}
+  .row2{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  @media (max-width:520px){.row2{grid-template-columns:1fr;}}
+  input[type=color]{width:52px; height:38px; padding:2px; border:1.5px solid var(--line); border-radius:5px; background:#fff; cursor:pointer;}
+
+  .btn{
+    display:inline-block; background:var(--crimson); color:#fff; border:none;
+    padding:12px 22px; font-family:'Barlow',sans-serif; font-weight:700; font-size:14.5px;
+    cursor:pointer; transition:background 0.15s, transform 0.1s; border-radius:6px;
+  }
+  .btn:hover{background:#E8323F;}
+  .btn:active{transform:translateY(1px);}
+  .btn:disabled{background:#C7CEDC; cursor:not-allowed;}
+  .btn.ghost{background:transparent; color:var(--navy); border:1.5px solid var(--navy);}
+  .btn.ghost:hover{background:var(--navy); color:#fff;}
+  .btn.gold{background:var(--gold); color:var(--navy);}
+  .btn.gold:hover{background:var(--gold-deep);}
+  .btn.small{padding:7px 14px; font-size:12.5px;}
+
+  .msg{padding:12px 14px; font-size:14px; margin-bottom:16px; display:none; border-radius:4px;}
+  .msg.ok{background:#DFF6EC; border-left:4px solid var(--mint); display:block;}
+  .msg.err{background:#FFE3E6; border-left:4px solid var(--crimson); display:block;}
+
+  .photo-picker{display:flex; gap:14px; align-items:center;}
+  .photo-preview{
+    width:64px; height:64px; border-radius:10px; background:var(--cloud); border:1.5px dashed var(--line);
+    display:flex; align-items:center; justify-content:center; overflow:hidden; flex-shrink:0;
+  }
+  .photo-preview span{font-size:10.5px; color:var(--muted); text-align:center; padding:0 4px;}
+  .photo-preview img{width:100%; height:100%; object-fit:cover;}
+  input[type=file]{font-family:'Barlow',sans-serif; font-size:13px; color:var(--muted);}
+  .avatar-circle{border-radius:50%; display:inline-flex; align-items:center; justify-content:center; color:#fff; font-family:'Barlow',sans-serif; font-weight:700; flex-shrink:0;}
+
+  /* ---------- Teams / Players lists ---------- */
+  .list-toolbar{display:flex; gap:10px; align-items:center; margin-bottom:18px; flex-wrap:wrap;}
+  .list-toolbar input[type=text]{max-width:260px;}
+  .chip-group{display:flex; gap:6px;}
+  .chip{
+    padding:6px 14px; font-size:13px; border:1.5px solid var(--line); background:var(--paper);
+    cursor:pointer; font-weight:700; color:var(--ink); border-radius:20px;
+  }
+  .chip.active{background:var(--navy); color:#fff; border-color:var(--navy);}
+
+  .team-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:16px;}
+  .team-card{background:var(--paper); border:1px solid var(--line); border-radius:6px; padding:18px; border-top:5px solid var(--royal);}
+  .team-card .card-head{display:flex; align-items:center; gap:12px;}
+  .team-card .team-photo{width:44px; height:44px; border-radius:8px; object-fit:cover; flex-shrink:0;}
+  .team-card .swatch{width:18px; height:18px; border-radius:50%; display:inline-block; margin-right:8px; vertical-align:middle; box-shadow:0 0 0 3px rgba(0,0,0,0.06);}
+  .team-card h3{font-size:21px; display:inline; font-family:'Barlow',sans-serif; font-weight:800;}
+  .team-card .owner{font-size:13px; color:var(--muted); margin:6px 0 12px;}
+  .purse-bar{background:var(--cloud); height:9px; margin:6px 0 4px; border-radius:5px; overflow:hidden;}
+  .purse-bar-fill{background:linear-gradient(90deg,var(--royal),var(--sky)); height:100%;}
+  .purse-text{font-size:12.5px; color:var(--muted); display:flex; justify-content:space-between; font-weight:600;}
+  .squad-list{margin-top:12px; font-size:13.5px;}
+  .squad-list summary{cursor:pointer; font-weight:700; color:var(--navy);}
+  .squad-row{display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line);}
+
+  table.players-table{width:100%; border-collapse:collapse; font-size:14px; border-radius:6px; overflow:hidden;}
+  table.players-table th{text-align:left; font-size:12.5px; text-transform:none; color:#fff; background:var(--navy); padding:10px 8px; font-weight:700;}
+  table.players-table td{padding:9px 8px; border-bottom:1px solid var(--line);}
+  table.players-table tbody tr:nth-child(even){background:#F7F9FD;}
+  .status-pill{padding:3px 10px; font-size:11.5px; font-weight:700; display:inline-block; border-radius:20px;}
+  .status-pill.unsold{background:var(--cloud); color:var(--muted);}
+  .status-pill.sold{background:var(--crimson); color:#fff;}
+
+  .modal-backdrop{
+    position:fixed; inset:0; background:rgba(10,26,61,0.75); display:none;
+    align-items:center; justify-content:center; z-index:100; padding:20px;
+  }
+  .modal-backdrop.show{display:flex;}
+  .modal{background:var(--paper); border-radius:8px; border-top:5px solid var(--crimson); padding:26px; max-width:340px; width:100%;}
+  .modal h3{font-size:21px; margin-bottom:10px; font-family:'Barlow',sans-serif; font-weight:800;}
+  .modal.wide{max-width:380px;}
+  .player-detail-head{display:flex; gap:14px; align-items:center; margin-bottom:14px;}
+  .player-detail-photo{width:80px; height:80px; border-radius:10px; overflow:hidden; flex-shrink:0; background:var(--cloud);}
+  .player-detail-photo img{width:100%; height:100%; object-fit:cover;}
+  .player-name-link{cursor:pointer; color:var(--royal); font-weight:700; text-decoration:underline;}
+  .player-detail-rows div{padding:5px 0; border-top:1px solid var(--line); font-size:13.5px; display:flex; justify-content:space-between;}
+
+  footer{max-width:1100px; margin:0 auto; padding:20px; text-align:center; font-size:12.5px; color:var(--muted); font-weight:500;}
+  footer button{background:none; border:none; color:var(--muted); text-decoration:underline; cursor:pointer; font-size:12.5px; padding:0;}
+  .empty{color:var(--muted); font-size:14px; padding:20px 0;}
+  @media (max-width:760px){
+    .topbar-inner{align-items:flex-start;}
+    .brand-logo{width:42px; height:42px;}
+    .brand h1{font-size:23px;}
+    .hero{padding:34px 24px 32px;}
+    .hero-inner{align-items:flex-start; flex-direction:column; gap:20px;}
+    .hero-logo{width:180px; max-height:150px; padding:12px;}
+    .hero h2{font-size:42px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <img class="brand-logo" src="logo.png" alt="SPORTATHON 3.0 logo">
+      <div class="brand-copy">
+        <h1 id="tournamentNameDisplay">SPORTATHON 3.0</h1>
+        <span class="tagline">Player registration</span>
+      </div>
+    </div>
+    <nav class="tabs" id="tabsNav">
+      <button data-tab="home" class="active">Home</button>
+      <button data-tab="register-player">Register player</button>
+      <button data-tab="teams">Teams</button>
+      <button data-tab="players">Players</button>
+    </nav>
+  </div>
+</div>
+<div class="orbit-bar"></div>
+
+<main>
+
+  <!-- HOME -->
+  <section id="view-home" class="view active">
+    <div class="hero">
+      <div class="hero-inner">
+        <div class="hero-copy">
+          <h2 id="heroTitle">SPORTATHON 3.0</h2>
+          <p class="sub">Sign up as a player and keep the league roster ready for team selection.</p>
+          <div class="scoreboard">
+            <div class="score-item"><div class="num" id="statTeams">0</div><div class="label">Teams registered</div></div>
+            <div class="score-item"><div class="num" id="statPlayers">0</div><div class="label">Players registered</div></div>
+            <div class="score-item"><div class="num" id="statSold">0</div><div class="label">Players selected</div></div>
+          </div>
+        </div>
+        <img class="hero-logo" src="logo.png" alt="SPORTATHON 3.0 logo">
+      </div>
+    </div>
+
+    <div class="cta-grid">
+      <div class="cta-card" data-goto="register-player">
+        <h3>Register as a player</h3>
+        <p>Add your playing details so teams can review your profile.</p>
+        <div class="go">Register player →</div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step"><div class="stepnum">1</div><h4>Register</h4><p>Players sign up through this page. No login needed.</p></div>
+      <div class="step"><div class="stepnum">2</div><h4>Review</h4><p>Teams can review registered players and shortlist their squad picks.</p></div>
+      <div class="step"><div class="stepnum">3</div><h4>Build a squad</h4><p>Use the Teams and Players tabs to track every roster in one place.</p></div>
+    </div>
+  </section>
+
+  <!-- REGISTER PLAYER -->
+  <section id="view-register-player" class="view">
+    <div class="panel">
+      <h2>Register as a player</h2>
+      <p class="desc">Share your category and contact details for team selection.</p>
+      <div class="msg" id="playerMsg"></div>
+      <form id="playerForm">
+        <div class="row2">
+          <div class="field">
+            <label for="playerName">Full name *</label>
+            <input type="text" id="playerName" required maxlength="40">
+          </div>
+          <div class="field">
+            <label for="playerAge">Age</label>
+            <input type="number" id="playerAge" min="10" max="70">
+          </div>
+        </div>
+        <div class="field">
+          <label for="playerRole">Category *</label>
+          <select id="playerRole" required>
+            <option value="">Select category</option>
+            <option>Batsman</option>
+            <option>Fast Bowler</option>
+            <option>Spinner</option>
+            <option>Wicket Keeper</option>
+            <option>All Rounder</option>
+          </select>
+        </div>
+        <div class="field conditional-field is-hidden" id="batsmanStyleField">
+          <label for="playerBatting">Batsman style</label>
+          <select id="playerBatting">
+            <option value="">—</option>
+            <option>Right-hand bat</option>
+            <option>Left-hand bat</option>
+          </select>
+        </div>
+        <div class="field conditional-field is-hidden" id="bowlerStyleField">
+          <label for="playerBowling">Fast Bowler / Spinner style</label>
+          <select id="playerBowling">
+            <option value="">—</option>
+            <option>Right-arm pace</option>
+            <option>Left-arm pace</option>
+            <option>Right-arm spin</option>
+            <option>Left-arm spin</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="playerContact">Contact number *</label>
+          <input type="tel" id="playerContact" required maxlength="20">
+        </div>
+        <div class="field">
+          <label for="playerPhoto">Player photo (optional)</label>
+          <div class="photo-picker">
+            <div class="photo-preview" id="playerPhotoPreview"><span>No photo</span></div>
+            <div>
+              <input type="file" id="playerPhoto" accept="image/*">
+              <div class="hint">Shown on your player profile.</div>
+            </div>
+          </div>
+        </div>
+        <button type="submit" class="btn">Register player</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- TEAMS -->
+  <section id="view-teams" class="view">
+    <h2 style="font-size:34px; margin-bottom:16px;">Teams</h2>
+    <div id="teamGrid" class="team-grid"></div>
+  </section>
+
+  <!-- PLAYERS -->
+  <section id="view-players" class="view">
+    <h2 style="font-size:34px; margin-bottom:16px;">Players</h2>
+    <div class="list-toolbar">
+      <input type="text" id="playerSearch" placeholder="Search by name">
+      <div class="chip-group" id="playerFilterChips">
+        <div class="chip active" data-filter="all">All</div>
+        <div class="chip" data-filter="unsold">Unsold</div>
+        <div class="chip" data-filter="sold">Sold</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="players-table" id="playersTable">
+        <thead><tr><th>Name</th><th>Category</th><th>Status</th><th>Sold to</th><th>Price</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  SPORTATHON 3.0 — built for this event only.
+</footer>
+
+<div class="modal-backdrop" id="playerModal">
+  <div class="modal wide" id="playerModalBody"></div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  const EVENT_NAME = "SPORTATHON 3.0";
+  let teams = [];
+  let players = [];
+  let auction = null;
+  let currentFilter = "all";
+  let currentSearch = "";
+
+  // ---------- storage helpers ----------
+  async function getShared(key){
+    try{
+      const r = await window.storage.get(key, true);
+      return r && r.value ? JSON.parse(r.value) : null;
+    }catch(e){ return null; }
+  }
+  async function setShared(key, val){
+    try{
+      await window.storage.set(key, JSON.stringify(val), true);
+      return true;
+    }catch(e){ console.error("storage set failed", key, e); return false; }
+  }
+  async function getPersonal(key){
+    try{
+      const r = await window.storage.get(key, false);
+      return r ? r.value : null;
+    }catch(e){ return null; }
+  }
+  async function setPersonal(key, val){
+    try{ await window.storage.set(key, val, false); }catch(e){}
+  }
+
+  async function getSharedRaw(key){
+    try{
+      const r = await window.storage.get(key, true);
+      return r ? r.value : null;
+    }catch(e){ return null; }
+  }
+  async function setSharedRaw(key, val){
+    try{
+      await window.storage.set(key, val, true);
+      return true;
+    }catch(e){ console.error("storage set failed", key, e); return false; }
+  }
+
+  const photoCache = Object.create(null);   // id -> dataUrl string, or null if none
+  const fetchingPhotos = new Set();
+
+  function resizeImageFile(file, maxDim, quality){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = e => {
+        const img = new Image();
+        img.onload = () => {
+          let w = img.width, h = img.height;
+          if (w >= h){ if (w > maxDim){ h = Math.round(h * maxDim / w); w = maxDim; } }
+          else { if (h > maxDim){ w = Math.round(w * maxDim / h); h = maxDim; } }
+          const canvas = document.createElement("canvas");
+          canvas.width = w; canvas.height = h;
+          canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+          resolve(canvas.toDataURL("image/jpeg", quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  function hashColor(str){
+    let hash = 0;
+    for (let i=0;i<str.length;i++) hash = str.charCodeAt(i) + ((hash<<5) - hash);
+    return `hsl(${Math.abs(hash) % 360},55%,42%)`;
+  }
+  function initialsOf(name){
+    return (name||"?").trim().split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase();
+  }
+  function avatarHTML(name, size){
+    return `<div class="avatar-circle" style="width:${size}px;height:${size}px;background:${hashColor(name||"?")};font-size:${Math.round(size*0.38)}px;">${esc(initialsOf(name))}</div>`;
+  }
+
+  async function loadPlayerPhotoInto(id, boxSelector){
+    if (photoCache[id] !== undefined){
+      const box = document.querySelector(boxSelector);
+      if (box && photoCache[id]) box.innerHTML = `<img src="${photoCache[id]}" alt="">`;
+      return;
+    }
+    if (fetchingPhotos.has("p:"+id)) return;
+    fetchingPhotos.add("p:"+id);
+    const data = await getSharedRaw("player-photo:" + id);
+    photoCache[id] = data || null;
+    fetchingPhotos.delete("p:"+id);
+    const box = document.querySelector(boxSelector);
+    if (box && data) box.innerHTML = `<img src="${data}" alt="">`;
+  }
+  async function loadTeamPhotoInto(id, boxSelector){
+    if (photoCache["team:"+id] !== undefined){
+      const box = document.querySelector(boxSelector);
+      if (box && photoCache["team:"+id]) box.outerHTML = `<img class="team-photo" src="${photoCache["team:"+id]}" alt="">`;
+      return;
+    }
+    if (fetchingPhotos.has("t:"+id)) return;
+    fetchingPhotos.add("t:"+id);
+    const data = await getSharedRaw("team-photo:" + id);
+    photoCache["team:"+id] = data || null;
+    fetchingPhotos.delete("t:"+id);
+    const box = document.querySelector(boxSelector);
+    if (box && data) box.outerHTML = `<img class="team-photo" src="${data}" alt="">`;
+  }
+
+
+  function uid(){
+    if (window.crypto && crypto.randomUUID) return crypto.randomUUID();
+    return "id-" + Date.now() + "-" + Math.random().toString(16).slice(2);
+  }
+  function esc(s){
+    return String(s == null ? "" : s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+  }
+
+  function defaultAuction(){
+    return {
+      tournamentName: EVENT_NAME,
+      purseDefault: 10000,
+      increment: 100,
+      status: "idle",          // idle | live | completed
+      queue: [],
+      currentPlayerId: null,
+      currentBid: 0,
+      currentBidTeamId: null,
+      bidLog: [],
+      lastSoldFlash: null
+    };
+  }
+
+  function teamSpent(teamId){
+    return players.filter(p => p.status === "sold" && p.soldTo === teamId)
+                   .reduce((sum,p) => sum + (p.soldPrice||0), 0);
+  }
+  function teamRemaining(team){
+    return (team.purse != null ? team.purse : auction.purseDefault) - teamSpent(team.id);
+  }
+
+  // ---------- load ----------
+  async function loadAll(){
+    const [t, p, a] = await Promise.all([getShared("teams"), getShared("players"), getShared("auction")]);
+    teams = t || [];
+    players = p || [];
+    auction = a || defaultAuction();
+    renderAll();
+  }
+
+  function renderAll(){
+    renderHome();
+    renderTeams();
+    renderPlayers();
+    document.getElementById("tournamentNameDisplay").textContent = EVENT_NAME;
+    document.getElementById("heroTitle").textContent = EVENT_NAME;
+  }
+
+  // ---------- HOME ----------
+  function renderHome(){
+    document.getElementById("statTeams").textContent = teams.length;
+    document.getElementById("statPlayers").textContent = players.length;
+    document.getElementById("statSold").textContent = players.filter(p=>p.status==="sold").length;
+  }
+
+  // ---------- PHOTO PICKERS (preview) ----------
+  let playerPhotoFile = null;
+  document.getElementById("playerPhoto").addEventListener("change", e => {
+    playerPhotoFile = e.target.files[0] || null;
+    const box = document.getElementById("playerPhotoPreview");
+    box.innerHTML = playerPhotoFile ? `<img src="${URL.createObjectURL(playerPhotoFile)}" alt="">` : "<span>No photo</span>";
+  });
+
+  const playerRoleSelect = document.getElementById("playerRole");
+  const batsmanStyleField = document.getElementById("batsmanStyleField");
+  const bowlerStyleField = document.getElementById("bowlerStyleField");
+  const playerBattingSelect = document.getElementById("playerBatting");
+  const playerBowlingSelect = document.getElementById("playerBowling");
+
+  function setBowlingOptions(options){
+    const previous = playerBowlingSelect.value;
+    playerBowlingSelect.innerHTML = '<option value="">—</option>' + options.map(option => `<option>${option}</option>`).join("");
+    playerBowlingSelect.value = options.includes(previous) ? previous : "";
+  }
+
+  function updateStyleFields(){
+    const category = playerRoleSelect.value;
+    const showBatsmanStyle = category === "Batsman" || category === "All Rounder";
+    const showBowlerStyle = category === "Fast Bowler" || category === "Spinner" || category === "All Rounder";
+
+    batsmanStyleField.classList.toggle("is-hidden", !showBatsmanStyle);
+    bowlerStyleField.classList.toggle("is-hidden", !showBowlerStyle);
+
+    if (!showBatsmanStyle) playerBattingSelect.value = "";
+    if (category === "Fast Bowler") setBowlingOptions(["Right-arm pace", "Left-arm pace"]);
+    else if (category === "Spinner") setBowlingOptions(["Right-arm spin", "Left-arm spin"]);
+    else if (category === "All Rounder") setBowlingOptions(["Right-arm pace", "Left-arm pace", "Right-arm spin", "Left-arm spin"]);
+    else playerBowlingSelect.value = "";
+  }
+
+  playerRoleSelect.addEventListener("change", updateStyleFields);
+  updateStyleFields();
+
+  // ---------- PLAYER REGISTRATION ----------
+  document.getElementById("playerForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+    const msg = document.getElementById("playerMsg");
+    const name = document.getElementById("playerName").value.trim();
+    const age = document.getElementById("playerAge").value;
+    const role = document.getElementById("playerRole").value;
+    const basePrice = 100;
+    const batting = batsmanStyleField.classList.contains("is-hidden") ? "" : playerBattingSelect.value;
+    const bowling = bowlerStyleField.classList.contains("is-hidden") ? "" : playerBowlingSelect.value;
+    const contact = document.getElementById("playerContact").value.trim();
+
+    if (!name || !role || !contact){
+      msg.className = "msg err"; msg.style.display="block"; msg.textContent = "Please fill in name, category and contact number.";
+      return;
+    }
+    const fresh = await getShared("players") || [];
+    const player = {
+      id: uid(), name, age: age || null, role, basePrice, battingStyle: batting, bowlingStyle: bowling,
+      contact, status: "unsold", soldTo: null, soldPrice: null, hasPhoto: !!playerPhotoFile, registeredAt: Date.now()
+    };
+    fresh.push(player);
+    const ok = await setShared("players", fresh);
+    players = fresh;
+    if (ok){
+      if (playerPhotoFile){
+        try{
+          const dataUrl = await resizeImageFile(playerPhotoFile, 320, 0.72);
+          await setSharedRaw("player-photo:" + player.id, dataUrl);
+          photoCache[player.id] = dataUrl;
+        }catch(err){ console.error("player photo upload failed", err); }
+      }
+      msg.className = "msg ok"; msg.style.display="block";
+      msg.textContent = `${name} is registered.`;
+      this.reset();
+      updateStyleFields();
+      document.getElementById("playerPhotoPreview").innerHTML = "<span>No photo</span>";
+      playerPhotoFile = null;
+    } else {
+      msg.className = "msg err"; msg.style.display="block"; msg.textContent = "Could not save right now — please try again.";
+    }
+    renderAll();
+  });
+
+  // ---------- TEAMS VIEW ----------
+  function renderTeams(){
+    const grid = document.getElementById("teamGrid");
+    if (!teams.length){
+      grid.innerHTML = '<div class="empty">No teams registered yet.</div>';
+      return;
+    }
+    grid.innerHTML = teams.map(team => {
+      const remaining = teamRemaining(team);
+      const total = team.purse != null ? team.purse : auction.purseDefault;
+      const spentPct = Math.min(100, Math.round(((total-remaining)/total)*100));
+      const squad = players.filter(p => p.status === "sold" && p.soldTo === team.id);
+      return `
+        <div class="team-card" style="border-top-color:${esc(team.color||'#19388A')}">
+          <div class="card-head">
+            <div id="team-photo-box-${team.id}">${team.hasPhoto ? '<div class="team-photo avatar-circle" style="border-radius:8px;background:'+hashColor(team.name)+';width:44px;height:44px;font-size:16px;">'+esc(initialsOf(team.name))+'</div>' : avatarHTML(team.name, 44)}</div>
+            <div><span class="swatch" style="background:${esc(team.color||'#19388A')}"></span><h3>${esc(team.name)}</h3></div>
+          </div>
+          <div class="owner">${esc(team.owner)}${team.city ? " · " + esc(team.city) : ""}</div>
+          <div class="purse-bar"><div class="purse-bar-fill" style="width:${spentPct}%"></div></div>
+          <div class="purse-text"><span>${remaining} left</span><span>${total} pts total</span></div>
+          <details class="squad-list">
+            <summary>Squad (${squad.length})</summary>
+            ${squad.length ? squad.map(p => `<div class="squad-row"><span class="player-name-link" data-view-player="${p.id}">${esc(p.name)} <small style="color:var(--muted)">(${esc(p.role)})</small></span><span>${p.soldPrice} pts</span></div>`).join("") : '<div class="squad-row"><span style="color:var(--muted)">No players yet</span></div>'}
+          </details>
+        </div>`;
+    }).join("");
+    teams.forEach(team => {
+      if (team.hasPhoto) loadTeamPhotoInto(team.id, `#team-photo-box-${team.id}`);
+    });
+    grid.querySelectorAll("[data-view-player]").forEach(el => {
+      el.addEventListener("click", () => openPlayerModal(el.getAttribute("data-view-player")));
+    });
+  }
+
+  // ---------- PLAYERS VIEW ----------
+  function renderPlayers(){
+    const tbody = document.querySelector("#playersTable tbody");
+    let list = players.slice();
+    if (currentFilter !== "all") list = list.filter(p => p.status === currentFilter);
+    if (currentSearch) list = list.filter(p => p.name.toLowerCase().includes(currentSearch));
+    if (!list.length){
+      tbody.innerHTML = `<tr><td colspan="6" class="empty">No players match.</td></tr>`;
+      return;
+    }
+    tbody.innerHTML = list.map(p => {
+      const soldToTeam = p.soldTo ? teams.find(t => t.id === p.soldTo) : null;
+      return `
+        <tr>
+          <td><span class="player-name-link" data-view-player="${p.id}">${esc(p.name)}</span></td>
+          <td>${esc(p.role)}</td>
+          <td><span class="status-pill ${p.status}">${p.status === "sold" ? "Sold" : "Unsold"}</span></td>
+          <td>${soldToTeam ? esc(soldToTeam.name) : "—"}</td>
+          <td>${p.soldPrice != null ? p.soldPrice : "—"}</td>
+          <td></td>
+        </tr>`;
+    }).join("");
+    tbody.querySelectorAll("[data-view-player]").forEach(el => {
+      el.addEventListener("click", () => openPlayerModal(el.getAttribute("data-view-player")));
+    });
+  }
+
+  // ---------- PLAYER DETAIL MODAL ----------
+  async function openPlayerModal(playerId){
+    const p = players.find(pl => pl.id === playerId);
+    if (!p) return;
+    const soldToTeam = p.soldTo ? teams.find(t => t.id === p.soldTo) : null;
+    const styleRows = `
+        ${p.battingStyle ? `<div><span>Batsman style</span><span>${esc(p.battingStyle)}</span></div>` : ""}
+        ${p.bowlingStyle ? `<div><span>Fast Bowler / Spinner style</span><span>${esc(p.bowlingStyle)}</span></div>` : ""}
+      `;
+    const body = document.getElementById("playerModalBody");
+    body.innerHTML = `
+      <div class="player-detail-head">
+        <div class="player-detail-photo" id="playerModalPhoto">${avatarHTML(p.name,80)}</div>
+        <div><h3>${esc(p.name)}</h3><div style="color:var(--muted); font-size:13.5px;">${esc(p.role)}</div></div>
+      </div>
+      <div class="player-detail-rows">
+        ${styleRows}
+        <div><span>Status</span><span>${p.status === "sold" ? "Sold" : "Unsold"}</span></div>
+        ${soldToTeam ? `<div><span>Team</span><span>${esc(soldToTeam.name)}</span></div><div><span>Sold price</span><span>${p.soldPrice} pts</span></div>` : ""}
+      </div>
+      <button class="btn ghost small" id="playerModalClose" style="margin-top:16px;">Close</button>
+    `;
+    document.getElementById("playerModal").classList.add("show");
+    document.getElementById("playerModalClose").addEventListener("click", () => {
+      document.getElementById("playerModal").classList.remove("show");
+    });
+    if (p.hasPhoto) await loadPlayerPhotoInto(p.id, "#playerModalPhoto");
+  }
+  document.getElementById("playerModal").addEventListener("click", e => {
+    if (e.target.id === "playerModal") e.target.classList.remove("show");
+  });
+
+  document.getElementById("playerSearch").addEventListener("input", e => {
+    currentSearch = e.target.value.trim().toLowerCase();
+    renderPlayers();
+  });
+  document.getElementById("playerFilterChips").addEventListener("click", e => {
+    if (!e.target.classList.contains("chip")) return;
+    document.querySelectorAll("#playerFilterChips .chip").forEach(c => c.classList.remove("active"));
+    e.target.classList.add("active");
+    currentFilter = e.target.getAttribute("data-filter");
+    renderPlayers();
+  });
+
+  // ---------- NAV ----------
+  document.getElementById("tabsNav").addEventListener("click", e => {
+    if (e.target.tagName !== "BUTTON") return;
+    goto(e.target.getAttribute("data-tab"));
+  });
+  document.querySelectorAll("[data-goto]").forEach(el => {
+    el.addEventListener("click", () => goto(el.getAttribute("data-goto")));
+  });
+  function goto(tab){
+    document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.getAttribute("data-tab") === tab));
+    document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+    document.getElementById("view-" + tab).classList.add("active");
+    window.scrollTo({top:0, behavior:"instant"});
+  }
+
+  // ---------- INIT + POLLING ----------
+  loadAll();
+  setInterval(loadAll, 3000);
+})();
+</script>
+</body>
+</html>
