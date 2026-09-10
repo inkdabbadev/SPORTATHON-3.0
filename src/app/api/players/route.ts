@@ -2,14 +2,14 @@ import { NextResponse } from "next/server";
 import { revalidatePath } from "next/cache";
 import { connectDB } from "@/lib/db";
 import { dataUrlToPhoto } from "@/lib/photo";
-import { playerSchema } from "@/lib/validation";
+import { registerPlayerSchema } from "@/lib/validation";
 import { Player } from "@/models/Player";
 
 export async function POST(request: Request) {
   try {
     await connectDB();
     const json = await request.json();
-    const parsed = playerSchema.safeParse(json);
+    const parsed = registerPlayerSchema.safeParse(json);
 
     if (!parsed.success) {
       return NextResponse.json({ error: parsed.error.issues[0]?.message || "Invalid player details." }, { status: 400 });

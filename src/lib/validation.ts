@@ -48,75 +48,91 @@ const photoDataUrl = z
   .optional()
   .transform((value) => value || "");
 
-export const playerSchema = z
-  .object({
-    name: z.string().trim().min(2, "Name is required.").max(80),
-    age: requiredNumber("Age", 10, 100),
-    gender: z.enum(PLAYER_GENDERS, {
-      required_error: "Gender is required.",
-      invalid_type_error: "Gender is required."
-    }),
-    registeringAs: z.enum(REGISTRATION_TYPES, {
-      required_error: "Registering as is required.",
-      invalid_type_error: "Registering as is required."
-    }),
-    reference: requiredText("Reference", 80),
-    category: z.enum(PLAYER_CATEGORIES),
-    batsmanStyle: z.enum(["", ...BATSMAN_STYLES]).optional().default(""),
-    bowlerStyle: z.enum(["", ...BOWLER_STYLES]).optional().default(""),
-    contact: z.string().trim().min(5, "Contact number is required.").max(30),
-    photoDataUrl,
-    status: z.enum(PLAYER_STATUSES).optional().default("unsold"),
-    soldTo: optionalId,
-    soldPrice: z.coerce
-      .number()
-      .min(0)
-      .optional()
-      .or(z.literal("").transform(() => undefined)),
-    basePrice: z.coerce.number().min(0).optional().default(100)
-  })
-  .superRefine((data, ctx) => {
-    const needsBatting = data.category === "Batsman" || data.category === "All Rounder";
-    const needsBowling =
-      data.category === "Fast Bowler" ||
-      data.category === "Spinner" ||
-      data.category === "All Rounder";
+const requiredPhotoDataUrl = z
+  .string()
+  .min(1, "Player photo is required.")
+  .max(750_000, "Photo is too large.")
+  .refine(
+    (value) => /^data:image\/(jpeg|jpg|png|webp);base64,/.test(value),
+    "Photo must be a jpeg, png, or webp data URL."
+  );
 
-    if (!needsBatting) data.batsmanStyle = "";
-    if (!needsBowling) data.bowlerStyle = "";
+const playerFields = {
+  name: z.string().trim().min(2, "Name is required.").max(80),
+  age: requiredNumber("Age", 10, 100),
+  gender: z.enum(PLAYER_GENDERS, {
+    required_error: "Gender is required.",
+    invalid_type_error: "Gender is required."
+  }),
+  registeringAs: z.enum(REGISTRATION_TYPES, {
+    required_error: "Registering as is required.",
+    invalid_type_error: "Registering as is required."
+  }),
+  reference: requiredText("Reference", 80),
+  category: z.enum(PLAYER_CATEGORIES),
+  batsmanStyle: z.enum(["", ...BATSMAN_STYLES]).optional().default(""),
+  bowlerStyle: z.enum(["", ...BOWLER_STYLES]).optional().default(""),
+  contact: z.string().trim().min(5, "Contact number is required.").max(30),
+  photoDataUrl,
+  status: z.enum(PLAYER_STATUSES).optional().default("unsold"),
+  soldTo: optionalId,
+  soldPrice: z.coerce
+    .number()
+    .min(0)
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+  basePrice: z.coerce.number().min(0).optional().default(100)
+};
 
-    if (needsBatting && !data.batsmanStyle) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["batsmanStyle"],
-        message: "Batsman style is required."
-      });
-    }
+function playerSuperRefine(data: { category: string; batsmanStyle?: string; bowlerStyle?: string }, ctx: z.RefinementCtx) {
+  const needsBatting = data.category === "Batsman" || data.category === "All Rounder";
+  const needsBowling =
+    data.category === "Fast Bowler" ||
+    data.category === "Spinner" ||
+    data.category === "All Rounder";
 
-    if (needsBowling && !data.bowlerStyle) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["bowlerStyle"],
-        message: "Bowling style is required."
-      });
-    }
+  if (!needsBatting) data.batsmanStyle = "";
+  if (!needsBowling) data.bowlerStyle = "";
 
-    if (data.category === "Fast Bowler" && data.bowlerStyle?.includes("spin")) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["bowlerStyle"],
-        message: "Fast bowlers must use a pace style."
-      });
-    }
+  if (needsBatting && !data.batsmanStyle) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["batsmanStyle"],
+      message: "Batsman style is required."
+    });
+  }
 
-    if (data.category === "Spinner" && data.bowlerStyle?.includes("pace")) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["bowlerStyle"],
-        message: "Spinners must use a spin style."
-      });
-    }
-  });
+  if (needsBowling && !data.bowlerStyle) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["bowlerStyle"],
+      message: "Bowling style is required."
+    });
+  }
+
+  if (data.category === "Fast Bowler" && data.bowlerStyle?.includes("spin")) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["bowlerStyle"],
+      message: "Fast bowlers must use a pace style."
+    });
+  }
+
+  if (data.category === "Spinner" && data.bowlerStyle?.includes("pace")) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["bowlerStyle"],
+      message: "Spinners must use a spin style."
+    });
+  }
+}
+
+export const playerSchema = z.object(playerFields).superRefine(playerSuperRefine);
+
+// Used by the public registration flow, where a photo upload is required.
+export const registerPlayerSchema = z
+  .object({ ...playerFields, photoDataUrl: requiredPhotoDataUrl })
+  .superRefine(playerSuperRefine);
 
 export const teamSchema = z.object({
   name: z.string().trim().min(2, "Team name is required.").max(80),

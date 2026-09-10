@@ -83,8 +83,14 @@ export function RegisterPlayerForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    setSubmitting(true);
     setState({});
+
+    if (!photoDataUrl) {
+      setState({ error: "Please upload a player photo." });
+      return;
+    }
+
+    setSubmitting(true);
 
     const form = event.currentTarget;
     const data = new FormData(form);
@@ -209,19 +215,25 @@ export function RegisterPlayerForm() {
       </div>
 
       <div className="field">
-        <label htmlFor="photo">Player photo (optional)</label>
+        <label htmlFor="photo">Player photo *</label>
         <div className="photo-picker">
           <div className="photo-preview">
             {photoPreview ? <img src={photoPreview} alt="" /> : <span className="hint">No photo</span>}
           </div>
           <div>
-            <input id="photo" accept="image/*" type="file" onChange={(event) => handlePhoto(event.target.files?.[0])} />
-            <div className="hint">Shown on your player profile.</div>
+            <input
+              id="photo"
+              accept="image/*"
+              required
+              type="file"
+              onChange={(event) => handlePhoto(event.target.files?.[0])}
+            />
+            <div className="hint">Shown on your player profile. Required to register.</div>
           </div>
         </div>
       </div>
 
-      <button className="btn" disabled={submitting} type="submit">
+      <button className="btn" disabled={submitting || !photoDataUrl} type="submit">
         {submitting ? "Registering..." : "Register player"}
       </button>
     </form>
