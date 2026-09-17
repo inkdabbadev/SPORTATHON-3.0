@@ -14,7 +14,7 @@ export default async function AdminSettingsPage() {
       <AdminNav />
       <section className="admin-card">
         <h2 className="page-title">Event Settings</h2>
-        <p className="desc">Manage public event naming and defaults.</p>
+        <p className="desc">Manage event naming and defaults.</p>
         <form action={updateSettingsAction}>
           <div className="field">
             <label htmlFor="name">Event name</label>

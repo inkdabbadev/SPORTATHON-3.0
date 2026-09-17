@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Header } from "@/components/Header";
+import { AppShell } from "@/components/AppShell";
 import { getEventSettings } from "@/lib/data";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "SPORTATHON 3.0",
-  description: "Player registration and roster management for SPORTATHON 3.0."
+  description: "Admin console for SPORTATHON 3.0 roster and team management."
 };
 
 async function loadLogoPath() {
@@ -23,9 +23,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang="en">
       <body>
-        <Header logoPath={logoPath} />
-        <main>{children}</main>
-        <footer>SPORTATHON 3.0 - built for this event only.</footer>
+        <AppShell logoPath={logoPath}>{children}</AppShell>
       </body>
     </html>
   );

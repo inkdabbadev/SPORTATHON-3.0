@@ -1,5 +1,7 @@
 import { redirect } from "next/navigation";
+import { getAdminSession } from "@/lib/auth";
 
-export default function AdminPage() {
-  redirect("/admin/dashboard");
+export default async function AdminPage() {
+  const session = await getAdminSession();
+  redirect(session ? "/admin/dashboard" : "/admin/login");
 }

@@ -4,7 +4,6 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { loginAdmin, logoutAdmin, requireAdmin } from "@/lib/auth";
-import { dataUrlToPhoto } from "@/lib/photo";
 import { eventSettingsSchema, loginSchema, playerSchema, teamSchema } from "@/lib/validation";
 import { EventSettings } from "@/models/EventSettings";
 import { Player } from "@/models/Player";
@@ -16,6 +15,12 @@ function value(formData: FormData, key: string) {
 
 function boolValue(formData: FormData, key: string) {
   return formData.get(key) === "on";
+}
+
+function withoutPhotoDataUrl<T extends { photoDataUrl?: unknown }>(data: T) {
+  const { photoDataUrl, ...fields } = data;
+  void photoDataUrl;
+  return fields;
 }
 
 export async function loginAction(formData: FormData) {
@@ -55,11 +60,10 @@ export async function createPlayerAction(formData: FormData) {
     basePrice: 100
   });
 
-  const { photoDataUrl: _createPhotoDataUrl, ...playerFields } = parsed;
+  const playerFields = withoutPhotoDataUrl(parsed);
   await Player.create({ ...playerFields, soldTo: parsed.soldTo || null });
-  revalidatePath("/");
-  revalidatePath("/players");
   revalidatePath("/admin/players");
+  revalidatePath("/admin/dashboard");
   redirect("/admin/players");
 }
 
@@ -83,12 +87,11 @@ export async function updatePlayerAction(formData: FormData) {
     basePrice: 100
   });
 
-  const { photoDataUrl: _updatePhotoDataUrl, ...playerFields } = parsed;
+  const playerFields = withoutPhotoDataUrl(parsed);
   await Player.findByIdAndUpdate(id, { ...playerFields, soldTo: parsed.soldTo || null }, { runValidators: true });
-  revalidatePath("/");
-  revalidatePath("/players");
-  revalidatePath("/teams");
   revalidatePath("/admin/players");
+  revalidatePath("/admin/teams");
+  revalidatePath("/admin/dashboard");
   redirect("/admin/players");
 }
 
@@ -96,10 +99,9 @@ export async function deletePlayerAction(formData: FormData) {
   await requireAdmin();
   await connectDB();
   await Player.findByIdAndDelete(value(formData, "id"));
-  revalidatePath("/");
-  revalidatePath("/players");
-  revalidatePath("/teams");
   revalidatePath("/admin/players");
+  revalidatePath("/admin/teams");
+  revalidatePath("/admin/dashboard");
 }
 
 export async function createTeamAction(formData: FormData) {
@@ -116,11 +118,10 @@ export async function createTeamAction(formData: FormData) {
     active: boolValue(formData, "active")
   });
 
-  const { photoDataUrl: _createTeamPhotoDataUrl, ...teamFields } = parsed;
+  const teamFields = withoutPhotoDataUrl(parsed);
   await Team.create(teamFields);
-  revalidatePath("/");
-  revalidatePath("/teams");
   revalidatePath("/admin/teams");
+  revalidatePath("/admin/dashboard");
   redirect("/admin/teams");
 }
 
@@ -139,11 +140,10 @@ export async function updateTeamAction(formData: FormData) {
     active: boolValue(formData, "active")
   });
 
-  const { photoDataUrl: _updateTeamPhotoDataUrl, ...teamFields } = parsed;
+  const teamFields = withoutPhotoDataUrl(parsed);
   await Team.findByIdAndUpdate(id, teamFields, { runValidators: true });
-  revalidatePath("/");
-  revalidatePath("/teams");
   revalidatePath("/admin/teams");
+  revalidatePath("/admin/dashboard");
   redirect("/admin/teams");
 }
 
@@ -153,23 +153,27 @@ export async function deleteTeamAction(formData: FormData) {
   const id = value(formData, "id");
   await Player.updateMany({ soldTo: id }, { $set: { soldTo: null, status: "unsold", soldPrice: null } });
   await Team.findByIdAndDelete(id);
-  revalidatePath("/");
-  revalidatePath("/teams");
-  revalidatePath("/players");
   revalidatePath("/admin/teams");
+  revalidatePath("/admin/players");
+  revalidatePath("/admin/dashboard");
 }
 
 export async function updateSettingsAction(formData: FormData) {
   await requireAdmin();
   await connectDB();
-  const { logoPath: _logoPath, ...parsed } = eventSettingsSchema.parse({
+  const parsed = eventSettingsSchema.parse({
     name: value(formData, "name"),
     tagline: value(formData, "tagline"),
     defaultPurse: value(formData, "defaultPurse")
   });
 
   const logoFile = formData.get("logo");
-  const update: Record<string, unknown> = { ...parsed, singletonKey: "active-event" };
+  const update: Record<string, unknown> = {
+    name: parsed.name,
+    tagline: parsed.tagline,
+    defaultPurse: parsed.defaultPurse,
+    singletonKey: "active-event"
+  };
 
   if (logoFile instanceof File && logoFile.size > 0) {
     if (!logoFile.type.startsWith("image/")) {
@@ -187,6 +191,6 @@ export async function updateSettingsAction(formData: FormData) {
     update,
     { upsert: true, runValidators: true }
   );
-  revalidatePath("/");
   revalidatePath("/admin/settings");
+  revalidatePath("/admin/dashboard");
 }

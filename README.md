@@ -1,6 +1,6 @@
 # SPORTATHON 3.0
 
-Next.js application for SPORTATHON 3.0 player registration, roster browsing, team management, and protected admin workflows.
+Next.js admin console for SPORTATHON 3.0 roster, team, and event management.
 
 ## Stack
 
@@ -41,14 +41,12 @@ Run locally:
 npm run dev
 ```
 
-Open `http://localhost:3000`.
+Open `http://localhost:3000/admin`.
 
 ## Routes
 
-- `/` public home
-- `/register` public player registration
-- `/teams` public teams view
-- `/players` public players view
+- `/` redirects to `/admin`
+- `/admin` admin app entry point
 - `/admin/login` admin login
 - `/admin/dashboard` protected dashboard
 - `/admin/players` protected player management
@@ -58,6 +56,9 @@ Open `http://localhost:3000`.
 ## Production Notes
 
 - Use MongoDB Atlas for a simple managed database.
+- Deploy this as one Vercel project. The app is admin-only:
+  - Admin: `https://your-domain.com/admin`
+  - Root: `https://your-domain.com/` redirects to `/admin`
 - Keep `AUTH_SECRET`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` private.
 - If your local DNS blocks Atlas SRV lookups, keep `MONGODB_DNS_SERVERS=8.8.8.8,1.1.1.1`.
 - Run `npm run seed` once after configuring production environment variables.
