@@ -118,7 +118,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                     <span className="auction-category">{player.category}</span>
                     <h3>{player.name}</h3>
                     <div className="auction-card-meta">
-                      <span>Age: {player.age || "-"}</span>
+                      <span className="auction-age">Age: {player.age || "-"}</span>
                     </div>
                     <div className="auction-base">
                       <span>Base Price</span>
