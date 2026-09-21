@@ -57,7 +57,7 @@ export async function createPlayerAction(formData: FormData) {
     status: value(formData, "status") || "unsold",
     soldTo: value(formData, "soldTo"),
     soldPrice: value(formData, "soldPrice"),
-    basePrice: 100
+    basePrice: 50
   });
 
   const playerFields = withoutPhotoDataUrl(parsed);
@@ -84,7 +84,7 @@ export async function updatePlayerAction(formData: FormData) {
     status: value(formData, "status") || "unsold",
     soldTo: value(formData, "soldTo"),
     soldPrice: value(formData, "soldPrice"),
-    basePrice: 100
+    basePrice: 50
   });
 
   const playerFields = withoutPhotoDataUrl(parsed);

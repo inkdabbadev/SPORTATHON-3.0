@@ -26,7 +26,7 @@ const PlayerSchema = new Schema(
     status: { type: String, required: true, enum: PLAYER_STATUSES, default: "unsold" },
     soldTo: { type: Schema.Types.ObjectId, ref: "Team", default: null },
     soldPrice: { type: Number, min: 0, default: null },
-    basePrice: { type: Number, min: 0, default: 100 }
+    basePrice: { type: Number, min: 0, default: 50 }
   },
   { timestamps: true }
 );

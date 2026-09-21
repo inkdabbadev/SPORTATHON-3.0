@@ -42,6 +42,7 @@ export type PlayerView = {
   bowlerStyle?: BowlerStyle;
   contact: string;
   photoDataUrl?: string;
+  basePrice: number;
   status: PlayerStatus;
   soldTo?: string;
   soldPrice?: number;

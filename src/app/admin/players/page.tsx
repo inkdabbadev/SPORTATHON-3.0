@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { deletePlayerAction } from "@/app/admin/actions";
 import { AdminNav } from "@/components/AdminNav";
+import { AdminPlayersBoard } from "@/components/AdminPlayersBoard";
 import { requireAdmin } from "@/lib/auth";
 import { getPlayers, getTeams } from "@/lib/data";
 
@@ -10,8 +10,6 @@ export default async function AdminPlayersPage() {
   await requireAdmin();
   const [players, teams] = await Promise.all([getPlayers(), getTeams()]);
 
-  const teamName = (teamId?: string) => teams.find((team) => team.id === teamId)?.name || "-";
-
   return (
     <div className="admin-shell">
       <AdminNav />
@@ -19,62 +17,12 @@ export default async function AdminPlayersPage() {
         <div className="page-head">
           <div>
             <h2 className="page-title">Players</h2>
-            <p className="desc">Review, edit, assign, or remove player registrations.</p>
+            <p className="desc">Alphabetical player list with duplicate checks, auction cards, and delete controls.</p>
           </div>
           <Link className="btn" href="/admin/players/new">Add player</Link>
         </div>
-        <div className="table-shell">
-          <table className="admin-table">
-            <thead>
-              <tr>
-                <th>Photo</th>
-                <th>Name</th>
-                <th>Gender</th>
-                <th>Registering as</th>
-                <th>Category</th>
-                <th>Reference</th>
-                <th>Status</th>
-                <th>Team</th>
-                <th>Contact</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {players.length ? (
-                players.map((player) => (
-                  <tr key={player.id}>
-                    <td>
-                      <div className={`table-avatar ${player.photoDataUrl ? "" : "empty"}`}>
-                        {player.photoDataUrl ? <img src={player.photoDataUrl} alt="" /> : "No photo"}
-                      </div>
-                    </td>
-                    <td>{player.name}</td>
-                    <td>{player.gender || "-"}</td>
-                    <td>{player.registeringAs || "-"}</td>
-                    <td>{player.category}</td>
-                    <td>{player.reference || "-"}</td>
-                    <td>{player.status === "sold" ? "Sold" : "Unsold"}</td>
-                    <td>{teamName(player.soldTo)}</td>
-                    <td>{player.contact}</td>
-                    <td>
-                      <div className="admin-actions">
-                        <Link className="btn ghost small" href={`/admin/players/${player.id}`}>Edit</Link>
-                        <form action={deletePlayerAction}>
-                          <input name="id" type="hidden" value={player.id} />
-                          <button className="btn ghost small" type="submit">Delete</button>
-                        </form>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="empty" colSpan={10}>No players yet.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+
+        <AdminPlayersBoard players={players} teams={teams} />
       </section>
     </div>
   );

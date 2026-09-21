@@ -33,6 +33,7 @@ type PlayerDoc = DocLike & {
   bowlerStyle?: BowlerStyle | "";
   contact: string;
   photo?: { data?: Buffer; contentType?: string } | null;
+  basePrice?: number;
   status: PlayerStatus;
   soldTo?: { toString(): string } | null;
   soldPrice?: number | null;
@@ -75,6 +76,7 @@ function serializePlayer(doc: PlayerDoc): PlayerView {
     bowlerStyle: doc.bowlerStyle || undefined,
     contact: doc.contact,
     photoDataUrl: photoToDataUrl(doc.photo),
+    basePrice: doc.basePrice ?? 50,
     status: doc.status,
     soldTo: doc.soldTo ? doc.soldTo.toString() : undefined,
     soldPrice: doc.soldPrice ?? undefined,
@@ -131,7 +133,7 @@ export async function getEventSettings() {
 
 export async function getPlayers() {
   await connectDB();
-  const docs = await Player.find({}).sort({ createdAt: -1 }).lean();
+  const docs = await Player.find({}).sort({ name: 1, createdAt: 1 }).lean();
   return docs.map((doc) => serializePlayer(doc as unknown as PlayerDoc));
 }
 

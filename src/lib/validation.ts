@@ -81,7 +81,7 @@ const playerFields = {
     .min(0)
     .optional()
     .or(z.literal("").transform(() => undefined)),
-  basePrice: z.coerce.number().min(0).optional().default(100)
+  basePrice: z.coerce.number().min(0).optional().default(50)
 };
 
 function playerSuperRefine(data: { category: string; batsmanStyle?: string; bowlerStyle?: string }, ctx: z.RefinementCtx) {
