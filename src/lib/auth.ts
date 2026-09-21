@@ -6,9 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { connectDB } from "@/lib/db";
 import { AdminUser } from "@/models/AdminUser";
-
-const COOKIE_NAME = "sportathon_admin";
-const SESSION_AGE_SECONDS = 60 * 60 * 8;
+import { ADMIN_COOKIE_NAME, SESSION_AGE_SECONDS, getAdminCookieOptions } from "@/lib/session-cookie";
 
 function getSecret() {
   const secret = process.env.AUTH_SECRET;
@@ -37,25 +35,24 @@ export async function loginAdmin(email: string, password: string) {
     .sign(getSecret());
 
   const cookieStore = await cookies();
-  cookieStore.set(COOKIE_NAME, token, {
-    httpOnly: true,
-    sameSite: "lax",
-    secure: process.env.NODE_ENV === "production",
-    maxAge: SESSION_AGE_SECONDS,
-    path: "/"
-  });
+  cookieStore.set(ADMIN_COOKIE_NAME, token, getAdminCookieOptions());
 
   return true;
 }
 
 export async function logoutAdmin() {
   const cookieStore = await cookies();
-  cookieStore.delete(COOKIE_NAME);
+  // Expire the same partitioned cookie that login created.
+  cookieStore.set(ADMIN_COOKIE_NAME, "", {
+    ...getAdminCookieOptions(),
+    maxAge: 0,
+    expires: new Date(0)
+  });
 }
 
 export async function getAdminSession() {
   const cookieStore = await cookies();
-  const token = cookieStore.get(COOKIE_NAME)?.value;
+  const token = cookieStore.get(ADMIN_COOKIE_NAME)?.value;
   if (!token) return null;
 
   try {
