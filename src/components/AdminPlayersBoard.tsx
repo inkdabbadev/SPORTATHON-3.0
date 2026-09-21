@@ -10,7 +10,7 @@ function normalizedName(name: string) {
 }
 
 function formatBasePrice(price: number) {
-  return `Rs.${price}/-`;
+  return `${price} Points`;
 }
 
 function playerSearchText(player: PlayerView, teamName: string) {
@@ -117,6 +117,9 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                   <div className="auction-card-copy">
                     <span className="auction-category">{player.category}</span>
                     <h3>{player.name}</h3>
+                    <div className="auction-card-meta">
+                      <span>Age: {player.age || "-"}</span>
+                    </div>
                     <div className="auction-base">
                       <span>Base Price</span>
                       <strong>{formatBasePrice(player.basePrice || 50)}</strong>
