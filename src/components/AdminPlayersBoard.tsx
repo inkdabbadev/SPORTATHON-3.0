@@ -188,7 +188,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                       <td>{teamName(player.soldTo)}</td>
                       <td>{player.contact}</td>
                       <td>
-                        <div className="admin-actions">
+                        <div className="admin-actions table-actions">
                           <button className="btn ghost small" type="button" onClick={() => setActivePlayer(player)}>Details</button>
                           <Link className="btn ghost small" href={`/admin/players/${player.id}`}>Edit</Link>
                           <form action={deletePlayerAction}>
