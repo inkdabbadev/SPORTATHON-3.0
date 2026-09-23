@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import { deletePlayerAction } from "@/app/admin/actions";
 import type { PlayerView, TeamView } from "@/types/domain";
 
@@ -9,8 +10,20 @@ function normalizedName(name: string) {
   return name.trim().replace(/\s+/g, " ").toLowerCase();
 }
 
-function formatBasePrice(price: number) {
+function formatPoints(price: number) {
   return `${price} Points`;
+}
+
+function hasSoldPrice(player: PlayerView) {
+  return player.status === "sold" && typeof player.soldPrice === "number";
+}
+
+function displayPrice(player: PlayerView) {
+  return hasSoldPrice(player) ? player.soldPrice ?? 0 : player.basePrice ?? 50;
+}
+
+function displayPriceLabel(player: PlayerView) {
+  return hasSoldPrice(player) ? "Sold Price" : "Base Price";
 }
 
 function playerSearchText(player: PlayerView, teamName: string) {
@@ -22,6 +35,7 @@ function playerSearchText(player: PlayerView, teamName: string) {
     player.reference,
     player.contact,
     player.status,
+    player.soldPrice?.toString(),
     teamName
   ]
     .filter(Boolean)
@@ -30,12 +44,34 @@ function playerSearchText(player: PlayerView, teamName: string) {
 }
 
 export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; teams: TeamView[] }) {
+  const router = useRouter();
   const [search, setSearch] = useState("");
   const [viewMode, setViewMode] = useState<"cards" | "table">("cards");
-  const [activePlayer, setActivePlayer] = useState<PlayerView | null>(null);
+  const [activePlayerId, setActivePlayerId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const refresh = () => router.refresh();
+    const interval = window.setInterval(refresh, 2500);
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [router]);
 
   const teamLookup = useMemo(() => new Map(teams.map((team) => [team.id, team.name])), [teams]);
   const teamName = (teamId?: string) => (teamId ? teamLookup.get(teamId) || "-" : "-");
+  const activePlayer = useMemo(
+    () => (activePlayerId ? players.find((player) => player.id === activePlayerId) || null : null),
+    [activePlayerId, players]
+  );
 
   const duplicateNames = useMemo(() => {
     const counts = new Map<string, { label: string; count: number }>();
@@ -75,9 +111,12 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
       <div className="auction-list-head">
         <div>
           <h3>Auction Player List</h3>
-          <p className="desc">Sorted A-Z. Every player is shown once with base price {formatBasePrice(50)}.</p>
+          <p className="desc">Sorted A-Z. Unsold players start at {formatPoints(50)} and sold players show the final points.</p>
         </div>
-        <span>{visiblePlayers.length} / {players.length} players</span>
+        <div className="auction-list-meta">
+          <span className="live-sync-pill">Live update</span>
+          <span>{visiblePlayers.length} / {players.length} players</span>
+        </div>
       </div>
 
       <div className="player-controls-panel">
@@ -121,12 +160,13 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                       <span className="auction-age">Age: {player.age || "-"}</span>
                     </div>
                     <div className="auction-base">
-                      <span>Base Price</span>
-                      <strong>{formatBasePrice(player.basePrice || 50)}</strong>
+                      <span>{displayPriceLabel(player)}</span>
+                      <strong>{formatPoints(displayPrice(player))}</strong>
                     </div>
+                    {player.status === "sold" ? <mark className="sold-mark">Sold</mark> : null}
                     {isDuplicate ? <mark>Double entry?</mark> : null}
                     <div className="auction-card-actions">
-                      <button className="btn ghost small" type="button" onClick={() => setActivePlayer(player)}>
+                      <button className="btn ghost small" type="button" onClick={() => setActivePlayerId(player.id)}>
                         Details
                       </button>
                       <Link className="btn ghost small" href={`/admin/players/${player.id}`}>Edit</Link>
@@ -157,7 +197,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                 <th>Batting</th>
                 <th>Bowling</th>
                 <th>Reference</th>
-                <th>Base Price</th>
+                <th>Points</th>
                 <th>Status</th>
                 <th>Team</th>
                 <th>Contact</th>
@@ -186,13 +226,16 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
                       <td>{player.batsmanStyle || "-"}</td>
                       <td>{player.bowlerStyle || "-"}</td>
                       <td>{player.reference || "-"}</td>
-                      <td>{formatBasePrice(player.basePrice || 50)}</td>
+                      <td>
+                        <strong>{formatPoints(displayPrice(player))}</strong>
+                        <span className="table-subtle">{displayPriceLabel(player)}</span>
+                      </td>
                       <td>{player.status === "sold" ? "Sold" : "Unsold"}</td>
                       <td>{teamName(player.soldTo)}</td>
                       <td>{player.contact}</td>
                       <td>
                         <div className="admin-actions table-actions">
-                          <button className="btn ghost small" type="button" onClick={() => setActivePlayer(player)}>Details</button>
+                          <button className="btn ghost small" type="button" onClick={() => setActivePlayerId(player.id)}>Details</button>
                           <Link className="btn ghost small" href={`/admin/players/${player.id}`}>Edit</Link>
                           <form action={deletePlayerAction}>
                             <input name="id" type="hidden" value={player.id} />
@@ -214,7 +257,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
       )}
 
       {activePlayer ? (
-        <div className="modal-backdrop show" onClick={() => setActivePlayer(null)}>
+        <div className="modal-backdrop show" onClick={() => setActivePlayerId(null)}>
           <section className="modal wide player-admin-detail" onClick={(event) => event.stopPropagation()}>
             <div className="player-detail-head">
               <div className="player-detail-photo">
@@ -223,7 +266,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
               <div>
                 <span className="auction-category">{activePlayer.category}</span>
                 <h3>{activePlayer.name}</h3>
-                <p>{formatBasePrice(activePlayer.basePrice || 50)} base price</p>
+                <p>{formatPoints(displayPrice(activePlayer))} {displayPriceLabel(activePlayer).toLowerCase()}</p>
               </div>
             </div>
             <div className="player-detail-rows">
@@ -232,6 +275,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
               <div><span>Registering as</span><span>{activePlayer.registeringAs || "-"}</span></div>
               <div><span>Reference</span><span>{activePlayer.reference || "-"}</span></div>
               <div><span>Contact</span><span>{activePlayer.contact || "-"}</span></div>
+              <div><span>{displayPriceLabel(activePlayer)}</span><span>{formatPoints(displayPrice(activePlayer))}</span></div>
               <div><span>Team</span><span>{teamName(activePlayer.soldTo)}</span></div>
               <div><span>Status</span><span>{activePlayer.status === "sold" ? "Sold" : "Unsold"}</span></div>
               <div><span>Batsman style</span><span>{activePlayer.batsmanStyle || "-"}</span></div>
@@ -239,7 +283,7 @@ export function AdminPlayersBoard({ players, teams }: { players: PlayerView[]; t
             </div>
             <div className="modal-actions">
               <Link className="btn small" href={`/admin/players/${activePlayer.id}`}>Edit player</Link>
-              <button className="btn ghost small" type="button" onClick={() => setActivePlayer(null)}>Close</button>
+              <button className="btn ghost small" type="button" onClick={() => setActivePlayerId(null)}>Close</button>
             </div>
           </section>
         </div>

@@ -1,4 +1,7 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { EVENT_NAME } from "@/types/domain";
 
 type AppShellProps = Readonly<{
@@ -7,6 +10,12 @@ type AppShellProps = Readonly<{
 }>;
 
 export function AppShell({ children, logoPath }: AppShellProps) {
+  const pathname = usePathname();
+
+  if (pathname?.startsWith("/auction")) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="admin-app-root">
       <header className="admin-topbar">

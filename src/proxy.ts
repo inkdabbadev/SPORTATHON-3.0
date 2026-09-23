@@ -7,6 +7,7 @@ export function proxy(request: NextRequest) {
 
   if (
     pathname.startsWith("/admin") ||
+    pathname.startsWith("/auction") ||
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
     PUBLIC_FILE.test(pathname)
