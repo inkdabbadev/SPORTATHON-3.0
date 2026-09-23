@@ -8,6 +8,16 @@ export function AdminNav() {
       <Link href="/admin/players">Players</Link>
       <Link href="/admin/teams">Teams</Link>
       <Link href="/admin/settings">Settings</Link>
+      <Link
+        className="admin-nav-auction"
+        href="/auction"
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label="Open auction in a new tab"
+      >
+        <span>Auction</span>
+        <span aria-hidden="true">↗</span>
+      </Link>
       <form action={logoutAction}>
         <button type="submit">Logout</button>
       </form>

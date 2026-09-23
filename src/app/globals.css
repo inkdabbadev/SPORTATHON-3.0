@@ -811,6 +811,24 @@ input[type="file"] {
   background: var(--cloud);
 }
 
+.admin-nav .admin-nav-auction {
+  align-items: center;
+  background: var(--navy);
+  color: #fff;
+  display: flex;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.admin-nav .admin-nav-auction:hover {
+  background: var(--royal);
+}
+
+.admin-nav .admin-nav-auction:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 2px;
+}
+
 .admin-card {
   border-top: 5px solid var(--gold-deep);
   box-shadow: 0 18px 48px rgba(0, 0, 0, 0.18);
